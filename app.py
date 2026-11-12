@@ -851,6 +851,8 @@ def seed():
     db.session.commit()
 
 
+os.makedirs(app.instance_path, exist_ok=True)
+
 with app.app_context():
     db.create_all()
     seed()

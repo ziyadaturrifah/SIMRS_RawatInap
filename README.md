@@ -69,7 +69,7 @@ Akun contoh:
 | Dokter  | dokter   | dokter123  |
 | Perawat | perawat  | perawat123 |
 
-Kredensial di atas hanya untuk lokal. Saat deploy Render, gunakan password yang dibuat dan ditampilkan pada pengaturan Environment Render.
+Kredensial di atas hanya untuk lokal. Saat deploy, atur password kuat melalui WSGI Environment Variables atau Render Environment sebelum database diinisialisasi.
 
 Admin boleh mengelola kamar, bed, dan dokter. Dokter dan perawat mengelola pasien, admisi, catatan,
 pindah kamar, dan pemulangan.
