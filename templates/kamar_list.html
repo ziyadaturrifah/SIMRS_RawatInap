@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf with context %}
+{% block title %}Kamar dan bed{% endblock %}
+{% block header %}
+<div><h1>Kamar dan bed</h1><p class="sub">Tarif dihitung per hari rawat</p></div>
+{% if user.role == 'admin' %}<a class="btn btn-primary" href="{{ url_for('kamar_baru') }}">Tambah kamar</a>{% endif %}
+{% endblock %}
+{% block content %}
+<form class="filters" method="get">
+  <input class="form-control" type="search" name="q" value="{{ q }}" placeholder="Cari nama kamar" aria-label="Cari kamar">
+  <select class="form-select" name="kelas" aria-label="Kelas">
+    <option value="">Semua kelas</option>
+    {% for k in KELAS %}<option {{ 'selected' if k == kelas }}>{{ k }}</option>{% endfor %}
+  </select>
+  <button class="btn btn-primary">Cari</button>
+  {% if q or kelas %}<a class="btn btn-link" href="{{ url_for('kamar_list') }}">Atur ulang</a>{% endif %}
+</form>
+<div class="row g-3">
+{% for k in kamar %}
+  <div class="col-md-6 col-xxl-4">
+    <section class="panel h-100">
+      <div class="panel-head">
+        <div><h2 class="mb-0">{{ k.nama }}</h2><small class="text-muted">{{ k.kelas }}, {{ k.tarif|rupiah }} per hari</small></div>
+        {% if user.role == 'admin' %}<a href="{{ url_for('kamar_ubah', id=k.id) }}">Ubah</a>{% endif %}
+      </div>
+      <ul class="bedlist">
+        {% for b in k.beds %}
+        <li>
+          <span>Bed {{ b.nomor }}</span>
+          {% if b.aktif %}<a href="{{ url_for('rawat_detail', id=b.aktif.rawat_id) }}">{{ b.aktif.rawat.pasien.nama }}</a>
+          {% else %}<span class="free">Kosong</span>{% endif %}
+          {% if user.role == 'admin' and not b.riwayat %}
+          <form method="post" action="{{ url_for('bed_hapus', id=b.id) }}" onsubmit="return confirm('Hapus bed ini?')">{{ csrf() }}<button class="linkbtn">Hapus</button></form>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% if user.role == 'admin' %}
+      <form method="post" action="{{ url_for('bed_tambah', id=k.id) }}">{{ csrf() }}<button class="btn btn-sm btn-outline-secondary">Tambah bed</button></form>
+      {% endif %}
+    </section>
+  </div>
+{% else %}
+  <div class="col-12"><p class="empty">Tidak ada kamar yang cocok dengan pencarian.</p></div>
+{% endfor %}
+</div>
+{% endblock %}

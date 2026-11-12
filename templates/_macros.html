@@ -1,0 +1,15 @@
+{% macro csrf() %}<input type="hidden" name="_csrf" value="{{ csrf_token() }}">{% endmacro %}
+
+{% macro pager(p, endpoint) %}
+{% if p.pages > 1 %}
+<nav class="pager" aria-label="Halaman data">
+  {% if p.has_prev %}<a href="{{ url_for(endpoint, **dict(request.args.to_dict(), page=p.prev_num)) }}">Sebelumnya</a>{% else %}<span class="off">Sebelumnya</span>{% endif %}
+  <span>Halaman {{ p.page }} dari {{ p.pages }}</span>
+  {% if p.has_next %}<a href="{{ url_for(endpoint, **dict(request.args.to_dict(), page=p.next_num)) }}">Berikutnya</a>{% else %}<span class="off">Berikutnya</span>{% endif %}
+</nav>
+{% endif %}
+{% endmacro %}
+
+{% macro status(s) %}
+{% if s == 'dirawat' %}<span class="pill pill-rawat">Dirawat</span>{% else %}<span class="pill pill-pulang">Pulang</span>{% endif %}
+{% endmacro %}

@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Terjadi kendala{% endblock %}
+{% block header %}<h1>{{ kode }}</h1>{% endblock %}
+{% block content %}
+<div class="panel"><p>{{ pesan }}</p><a class="btn btn-primary" href="{{ url_for('dashboard') }}">Kembali ke dashboard</a></div>
+{% endblock %}

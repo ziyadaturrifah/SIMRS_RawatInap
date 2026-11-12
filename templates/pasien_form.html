@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf with context %}
+{% block title %}{{ 'Ubah pasien' if pasien else 'Pasien baru' }}{% endblock %}
+{% block header %}<h1>{{ 'Ubah data pasien' if pasien else 'Daftarkan pasien' }}</h1>{% endblock %}
+{% block content %}
+<form method="post" class="panel form-narrow">
+  {{ csrf() }}
+  {% if pasien %}<p class="text-muted">No. RM {{ pasien.no_rm }}</p>{% else %}<p class="text-muted">No. RM dibuat otomatis saat disimpan.</p>{% endif %}
+  <div class="row g-3">
+    <div class="col-12"><label class="form-label" for="nama">Nama lengkap</label>
+      <input class="form-control" id="nama" name="nama" value="{{ form.get('nama','') }}" required></div>
+    <div class="col-md-6"><label class="form-label" for="jk">Jenis kelamin</label>
+      <select class="form-select" id="jk" name="jenis_kelamin" required>
+        <option value="">Pilih</option>
+        <option value="L" {{ 'selected' if form.get('jenis_kelamin') == 'L' }}>Laki-laki</option>
+        <option value="P" {{ 'selected' if form.get('jenis_kelamin') == 'P' }}>Perempuan</option>
+      </select></div>
+    <div class="col-md-6"><label class="form-label" for="lahir">Tanggal lahir</label>
+      <input class="form-control" type="date" id="lahir" name="tgl_lahir" value="{{ form.get('tgl_lahir','') }}" max="{{ today }}" required></div>
+    <div class="col-md-6"><label class="form-label" for="telepon">Telepon</label>
+      <input class="form-control" id="telepon" name="telepon" value="{{ form.get('telepon','') or '' }}" inputmode="tel"></div>
+    <div class="col-md-3"><label class="form-label" for="gol">Golongan darah</label>
+      <select class="form-select" id="gol" name="gol_darah">{% for g in GOL_DARAH %}<option {{ 'selected' if form.get('gol_darah') == g }}>{{ g }}</option>{% endfor %}</select></div>
+    <div class="col-md-3"><label class="form-label" for="pj">Penjamin</label>
+      <select class="form-select" id="pj" name="penjamin">{% for p in PENJAMIN %}<option {{ 'selected' if form.get('penjamin') == p }}>{{ p }}</option>{% endfor %}</select></div>
+    <div class="col-12"><label class="form-label" for="alamat">Alamat</label>
+      <textarea class="form-control" id="alamat" name="alamat" rows="2">{{ form.get('alamat','') or '' }}</textarea></div>
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-primary">Simpan pasien</button>
+    <a class="btn btn-link" href="{{ url_for('pasien_list') }}">Batal</a>
+  </div>
+</form>
+{% endblock %}

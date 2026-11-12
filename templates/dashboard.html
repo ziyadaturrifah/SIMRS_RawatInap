@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status with context %}
+{% block title %}Dashboard{% endblock %}
+{% block header %}
+<div><h1>Dashboard</h1><p class="sub">{{ tanggal_teks }} <span class="sub-divider">·</span> Pantau kondisi bangsal hari ini.</p></div>
+<a class="btn btn-primary" href="{{ url_for('rawat_baru') }}">Terima pasien baru</a>
+{% endblock %}
+{% block content %}
+<section class="stat-strip" aria-label="Ringkasan bangsal">
+  <div class="stat-card stat-patients">
+    <span class="stat-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0M16 5.5a3 3 0 0 1 0 5.8M17 15a5 5 0 0 1 3.5 4.8"/></svg></span>
+    <span class="stat-num">{{ dirawat }}</span><span class="stat-lbl">Pasien dirawat</span>
+  </div>
+  <div class="stat-card stat-beds">
+    <span class="stat-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 20V7m0 9h18v4m-18-8h6V9a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v3h6a2 2 0 0 1 2 2v2"/></svg></span>
+    <span class="stat-num">{{ bed_kosong }}<small> / {{ total_bed }}</small></span><span class="stat-lbl">Bed tersedia</span>
+  </div>
+  <div class="stat-card stat-occupancy">
+    <span class="stat-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V5m0 14h16M8 15l3-4 3 2 5-7"/></svg></span>
+    <span class="stat-num">{{ bor }}%</span><span class="stat-lbl">Tingkat hunian (BOR)</span>
+  </div>
+  <div class="stat-card stat-flow">
+    <span class="stat-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v14m-6-6 6 6 6-6M6 8l6-6 6 6"/></svg></span>
+    <span class="stat-num">{{ masuk_hari_ini }} <small>/ {{ pulang_hari_ini }}</small></span><span class="stat-lbl">Masuk / pulang hari ini</span>
+  </div>
+</section>
+
+<div class="row g-4">
+  <div class="col-xl-8">
+    <section class="panel">
+      <div class="panel-head">
+        <div><h2>Peta bed</h2><p class="panel-caption">Ketersediaan tempat tidur per kamar</p></div>
+        <div class="legend"><span><i class="sw sw-kosong"></i>Kosong</span><span><i class="sw sw-terisi"></i>Terisi</span></div>
+      </div>
+      {% for k in kamar %}
+      <div class="room">
+        <div class="room-head"><strong>{{ k.nama }}</strong><span>{{ k.kelas }}, {{ k.tarif|rupiah }} per hari</span></div>
+        <div class="beds">
+          {% for b in k.beds %}
+            {% if b.aktif %}
+            <a class="bed bed-terisi" href="{{ url_for('rawat_detail', id=b.aktif.rawat_id) }}" title="{{ b.aktif.rawat.pasien.nama }}">
+              <span class="bed-no">Bed {{ b.nomor }}</span><span class="bed-nm">{{ b.aktif.rawat.pasien.nama }}</span>
+            </a>
+            {% else %}
+            <a class="bed bed-kosong" href="{{ url_for('rawat_baru', bed_id=b.id) }}" title="Terima pasien di bed ini">
+              <span class="bed-no">Bed {{ b.nomor }}</span><span class="bed-nm">Kosong</span>
+            </a>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+      {% else %}
+      <p class="empty">Belum ada kamar. Admin bisa menambahkannya di menu Kamar dan bed.</p>
+      {% endfor %}
+    </section>
+  </div>
+  <div class="col-xl-4">
+    <section class="panel">
+      <div class="panel-head"><div><h2>Pasien dirawat</h2><p class="panel-caption">Pasien yang terakhir masuk</p></div><a class="panel-link" href="{{ url_for('rawat_list', status='dirawat') }}">Lihat semua <span aria-hidden="true">→</span></a></div>
+      {% for r in terbaru %}
+      <a class="recent" href="{{ url_for('rawat_detail', id=r.id) }}">
+        <strong>{{ r.pasien.nama }}</strong>
+        <span>{{ r.bed_sekarang.label }}</span>
+        <small>Hari ke-{{ r.lama_rawat }}, {{ r.diagnosa_awal }}</small>
+      </a>
+      {% else %}
+      <p class="empty">Belum ada pasien yang sedang dirawat.</p>
+      {% endfor %}
+    </section>
+  </div>
+</div>
+{% endblock %}

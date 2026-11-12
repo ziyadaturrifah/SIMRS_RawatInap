@@ -1,0 +1,67 @@
+{% from "_macros.html" import csrf with context %}
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Rawat inap{% endblock %} - SIMRS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&family=Schibsted+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+</head>
+<body>
+<div class="shell">
+  <aside class="side">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"><span>+</span></span>
+      <div><strong>SIMRS</strong><small>Rawat inap</small></div>
+    </div>
+    <nav class="menu" aria-label="Menu utama">
+      {% set ep = request.endpoint or '' %}
+      <span class="menu-label">MENU UTAMA</span>
+      <a href="{{ url_for('dashboard') }}" class="{{ 'on' if ep == 'dashboard' }}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="11" width="7" height="10" rx="1.5"/><rect x="3" y="13" width="7" height="8" rx="1.5"/></svg>
+        <span>Dashboard</span>
+      </a>
+      <a href="{{ url_for('rawat_list') }}" class="{{ 'on' if ep.startswith('rawat') or ep.startswith('catatan') }}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 19V8a2 2 0 0 1 2-2h4a3 3 0 0 1 3 3v2h5a4 4 0 0 1 4 4v4"/><path d="M3 15h18M7 10h1M5 19v2m14-2v2"/></svg>
+        <span>Rawat inap</span>
+      </a>
+      <a href="{{ url_for('pasien_list') }}" class="{{ 'on' if ep.startswith('pasien') }}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0M16 5.5a3 3 0 0 1 0 5.8M17 15a5 5 0 0 1 3.5 4.8"/></svg>
+        <span>Pasien</span>
+      </a>
+      <a href="{{ url_for('kamar_list') }}" class="{{ 'on' if ep.startswith('kamar') or ep.startswith('bed') }}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20V7m0 9h18v4m-18-8h6V9a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v3h6a2 2 0 0 1 2 2v2M6 20v1m13-1v1"/></svg>
+        <span>Kamar dan bed</span>
+      </a>
+      <a href="{{ url_for('dokter_list') }}" class="{{ 'on' if ep.startswith('dokter') }}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="4"/><path d="M5 21v-2a7 7 0 0 1 14 0v2M12 14v5m-2.5-2.5h5"/></svg>
+        <span>Dokter</span>
+      </a>
+    </nav>
+    <div class="who">
+      <span class="user-avatar" aria-hidden="true">{{ user.nama[:1]|upper }}</span>
+      <div class="user-info"><strong>{{ user.nama }}</strong><small>{{ user.role|capitalize }}</small></div>
+      <form method="post" action="{{ url_for('logout') }}">{{ csrf() }}<button class="logout-btn" aria-label="Keluar" title="Keluar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5m5 5H3m9-9h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7"/></svg></button></form>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="page-head">
+      <div class="page-context"><span class="context-dot"></span>SIMRS <span>/</span> Rawat inap</div>
+      {% block header %}{% endblock %}
+    </header>
+    {% with msgs = get_flashed_messages(with_categories=true) %}
+      {% for cat, m in msgs %}
+        <div class="alert alert-{{ cat }} alert-dismissible" role="alert">{{ m }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button></div>
+      {% endfor %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

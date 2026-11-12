@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, pager with context %}
+{% block title %}Pasien{% endblock %}
+{% block header %}
+<div><h1>Pasien</h1><p class="sub">{{ pagination.total }} pasien terdaftar</p></div>
+<a class="btn btn-primary" href="{{ url_for('pasien_baru') }}">Daftarkan pasien</a>
+{% endblock %}
+{% block content %}
+<form class="filters" method="get">
+  <input class="form-control" type="search" name="q" value="{{ q }}" placeholder="Cari nama, no. RM, telepon, atau alamat" aria-label="Cari pasien">
+  <select class="form-select" name="penjamin" aria-label="Penjamin">
+    <option value="">Semua penjamin</option>
+    {% for p in PENJAMIN %}<option {{ 'selected' if p == penjamin }}>{{ p }}</option>{% endfor %}
+  </select>
+  <button class="btn btn-primary">Cari</button>
+  {% if q or penjamin %}<a class="btn btn-link" href="{{ url_for('pasien_list') }}">Atur ulang</a>{% endif %}
+</form>
+<div class="panel p-0 table-wrap">
+  <table class="table align-middle mb-0">
+    <thead><tr><th>No. RM</th><th>Nama</th><th>Umur</th><th>Penjamin</th><th>Status</th><th class="text-end">Aksi</th></tr></thead>
+    <tbody>
+    {% for p in pagination.items %}
+      <tr>
+        <td>{{ p.no_rm }}</td>
+        <td><a class="name" href="{{ url_for('pasien_detail', id=p.id) }}">{{ p.nama }}</a><small class="d-block text-muted">{{ 'Laki-laki' if p.jenis_kelamin == 'L' else 'Perempuan' }}, {{ p.telepon or '-' }}</small></td>
+        <td>{{ p.umur }} th</td>
+        <td>{{ p.penjamin }}</td>
+        <td>{% if p.rawat_aktif %}<a class="pill pill-rawat" href="{{ url_for('rawat_detail', id=p.rawat_aktif.id) }}">Sedang dirawat</a>{% else %}<span class="text-muted">Tidak dirawat</span>{% endif %}</td>
+        <td class="text-end actions">
+          {% if not p.rawat_aktif %}<a href="{{ url_for('rawat_baru', pasien_id=p.id) }}">Rawat inap</a>{% endif %}
+          <a href="{{ url_for('pasien_ubah', id=p.id) }}">Ubah</a>
+        </td>
+      </tr>
+    {% else %}
+      <tr><td colspan="6" class="empty">Tidak ada pasien yang cocok. Ubah kata kunci atau daftarkan pasien baru.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{{ pager(pagination, 'pasien_list') }}
+{% endblock %}

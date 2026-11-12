@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, status with context %}
+{% block title %}{{ pasien.nama }}{% endblock %}
+{% block header %}
+<div><h1>{{ pasien.nama }}</h1><p class="sub">{{ pasien.no_rm }}</p></div>
+<div class="head-actions">
+  <a class="btn btn-outline-secondary" href="{{ url_for('pasien_ubah', id=pasien.id) }}">Ubah data</a>
+  {% if not pasien.rawat_aktif %}<a class="btn btn-primary" href="{{ url_for('rawat_baru', pasien_id=pasien.id) }}">Rawat inap</a>
+  {% else %}<a class="btn btn-primary" href="{{ url_for('rawat_detail', id=pasien.rawat_aktif.id) }}">Buka rawat inap aktif</a>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-4">
+    <section class="panel">
+      <h2>Data diri</h2>
+      <dl class="facts">
+        <dt>Jenis kelamin</dt><dd>{{ 'Laki-laki' if pasien.jenis_kelamin == 'L' else 'Perempuan' }}</dd>
+        <dt>Tanggal lahir</dt><dd>{{ pasien.tgl_lahir|tgl }} ({{ pasien.umur }} tahun)</dd>
+        <dt>Golongan darah</dt><dd>{{ pasien.gol_darah }}</dd>
+        <dt>Penjamin</dt><dd>{{ pasien.penjamin }}</dd>
+        <dt>Telepon</dt><dd>{{ pasien.telepon or '-' }}</dd>
+        <dt>Alamat</dt><dd>{{ pasien.alamat or '-' }}</dd>
+      </dl>
+      {% if user.role == 'admin' %}
+      <form method="post" action="{{ url_for('pasien_hapus', id=pasien.id) }}" onsubmit="return confirm('Hapus data pasien ini?')">{{ csrf() }}
+        <button class="btn btn-sm btn-outline-danger">Hapus pasien</button></form>
+      {% endif %}
+    </section>
+  </div>
+  <div class="col-lg-8">
+    <section class="panel p-0 table-wrap">
+      <div class="panel-head p-3 pb-0"><h2>Riwayat rawat inap</h2></div>
+      <table class="table align-middle mb-0">
+        <thead><tr><th>No. rawat</th><th>Masuk</th><th>Diagnosa</th><th>Status</th></tr></thead>
+        <tbody>
+        {% for r in pasien.rawat %}
+          <tr><td><a class="name" href="{{ url_for('rawat_detail', id=r.id) }}">{{ r.no_rawat }}</a></td><td>{{ r.tgl_masuk|tgl }}</td><td>{{ r.diagnosa_awal }}</td><td>{{ status(r.status) }}</td></tr>
+        {% else %}
+          <tr><td colspan="4" class="empty">Pasien ini belum pernah dirawat inap.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  </div>
+</div>
+{% endblock %}

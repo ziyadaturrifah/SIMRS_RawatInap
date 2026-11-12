@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pager, status with context %}
+{% block title %}Rawat inap{% endblock %}
+{% block header %}
+<div><h1>Rawat inap</h1><p class="sub">{{ pagination.total }} data ditemukan</p></div>
+<a class="btn btn-primary" href="{{ url_for('rawat_baru') }}">Terima pasien baru</a>
+{% endblock %}
+{% block content %}
+<form class="filters" method="get">
+  <input class="form-control" type="search" name="q" value="{{ q }}" placeholder="Cari nama, no. RM, no. rawat, diagnosa, atau kamar" aria-label="Cari rawat inap">
+  <select class="form-select" name="status" aria-label="Status">
+    <option value="">Semua status</option>
+    <option value="dirawat" {{ 'selected' if status == 'dirawat' }}>Sedang dirawat</option>
+    <option value="pulang" {{ 'selected' if status == 'pulang' }}>Sudah pulang</option>
+  </select>
+  <select class="form-select" name="dokter" aria-label="Dokter">
+    <option value="">Semua dokter</option>
+    {% for d in dokter %}<option value="{{ d.id }}" {{ 'selected' if dokter_id == d.id }}>{{ d.nama }}</option>{% endfor %}
+  </select>
+  <button class="btn btn-primary">Cari</button>
+  {% if q or status or dokter_id %}<a class="btn btn-link" href="{{ url_for('rawat_list') }}">Atur ulang</a>{% endif %}
+</form>
+<div class="panel p-0 table-wrap">
+  <table class="table align-middle mb-0">
+    <thead><tr><th>No. rawat</th><th>Pasien</th><th>Kamar</th><th>Dokter</th><th>Masuk</th><th>Lama</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for r in pagination.items %}
+      <tr>
+        <td><a class="name" href="{{ url_for('rawat_detail', id=r.id) }}">{{ r.no_rawat }}</a></td>
+        <td>{{ r.pasien.nama }}<small class="d-block text-muted">{{ r.diagnosa_awal }}</small></td>
+        <td>{% if r.bed_sekarang %}{{ r.bed_sekarang.label }}{% else %}<span class="text-muted">-</span>{% endif %}</td>
+        <td>{{ r.dokter.nama }}</td>
+        <td>{{ r.tgl_masuk|tgl }}</td>
+        <td>{{ r.lama_rawat }} hari</td>
+        <td>{% if r.status == 'dirawat' %}<span class="pill pill-rawat">Dirawat</span>{% else %}<span class="pill pill-pulang">Pulang</span>{% endif %}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="7" class="empty">Tidak ada data rawat inap yang cocok. Ubah filter atau terima pasien baru.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{{ pager(pagination, 'rawat_list') }}
+{% endblock %}

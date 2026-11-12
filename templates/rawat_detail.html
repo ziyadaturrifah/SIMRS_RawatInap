@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, status with context %}
+{% block title %}{{ r.pasien.nama }}{% endblock %}
+{% block header %}
+<div>
+  <h1>{{ r.pasien.nama }} {{ status(r.status) }}</h1>
+  <p class="sub">{{ r.no_rawat }}, <a href="{{ url_for('pasien_detail', id=r.pasien.id) }}">{{ r.pasien.no_rm }}</a></p>
+</div>
+{% if r.status == 'dirawat' %}
+<div class="head-actions">
+  <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalPindah">Pindah kamar</button>
+  <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalPulang">Pulangkan pasien</button>
+</div>
+{% endif %}
+{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-5">
+    <section class="panel">
+      <h2>Ringkasan</h2>
+      <dl class="facts">
+        <dt>Umur dan jenis kelamin</dt><dd>{{ r.pasien.umur }} tahun, {{ 'laki-laki' if r.pasien.jenis_kelamin == 'L' else 'perempuan' }}</dd>
+        <dt>Penjamin</dt><dd>{{ r.pasien.penjamin }}</dd>
+        <dt>Dokter penanggung jawab</dt><dd>{{ r.dokter.nama }}<small class="d-block text-muted">{{ r.dokter.spesialis }}</small></dd>
+        <dt>Diagnosa awal</dt><dd>{{ r.diagnosa_awal }}</dd>
+        <dt>Masuk</dt><dd>{{ r.tgl_masuk|tglwaktu }}</dd>
+        {% if r.status == 'pulang' %}
+        <dt>Pulang</dt><dd>{{ r.tgl_keluar|tglwaktu }}</dd>
+        <dt>Cara pulang</dt><dd>{{ r.cara_pulang }}</dd>
+        {% if r.ringkasan_pulang %}<dt>Ringkasan pulang</dt><dd>{{ r.ringkasan_pulang }}</dd>{% endif %}
+        {% else %}
+        <dt>Bed sekarang</dt><dd>{{ r.bed_sekarang.label }}</dd>
+        {% endif %}
+        <dt>Lama rawat</dt><dd>{{ r.lama_rawat }} hari</dd>
+        <dt>{{ 'Total biaya kamar' if r.status == 'pulang' else 'Biaya kamar sementara' }}</dt><dd class="money">{{ r.biaya_kamar|rupiah }}</dd>
+      </dl>
+    </section>
+    <section class="panel p-0 table-wrap">
+      <div class="panel-head p-3 pb-0"><h2>Riwayat kamar</h2></div>
+      <table class="table mb-0">
+        <thead><tr><th>Bed</th><th>Mulai</th><th>Hari</th><th class="text-end">Biaya</th></tr></thead>
+        <tbody>
+        {% for rb in r.riwayat_bed %}
+          <tr><td>{{ rb.bed.label }}<small class="d-block text-muted">{{ rb.tarif|rupiah }} per hari</small></td><td>{{ rb.mulai|tglwaktu }}</td><td>{{ rb.hari }}</td><td class="text-end">{{ rb.biaya|rupiah }}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <div class="col-lg-7">
+    {% if r.status == 'dirawat' %}
+    <form method="post" action="{{ url_for('catatan_tambah', id=r.id) }}" class="panel">
+      {{ csrf() }}
+      <h2>Catatan harian</h2>
+      <div class="row g-2 mb-2">
+        <div class="col-4"><label class="form-label" for="suhu">Suhu (°C)</label><input class="form-control" id="suhu" name="suhu" inputmode="decimal" placeholder="36,8"></div>
+        <div class="col-4"><label class="form-label" for="td">Tekanan darah</label><input class="form-control" id="td" name="tekanan_darah" placeholder="120/80"></div>
+        <div class="col-4"><label class="form-label" for="nadi">Nadi (x/menit)</label><input class="form-control" id="nadi" name="nadi" inputmode="numeric" placeholder="80"></div>
+      </div>
+      <label class="form-label" for="kel">Keluhan dan perkembangan</label>
+      <textarea class="form-control mb-2" id="kel" name="keluhan" rows="2"></textarea>
+      <label class="form-label" for="ins">Instruksi dokter</label>
+      <textarea class="form-control mb-3" id="ins" name="instruksi" rows="2"></textarea>
+      <button class="btn btn-primary">Simpan catatan</button>
+    </form>
+    {% endif %}
+
+    <section class="panel">
+      <h2>Perkembangan pasien</h2>
+      {% for c in r.catatan %}
+      <article class="note">
+        <header><strong>{{ c.waktu|tglwaktu }}</strong><span>{{ c.penulis.nama if c.penulis else '-' }}</span></header>
+        <div class="vitals">
+          {% if c.suhu %}<span>Suhu {{ c.suhu|string|replace('.', ',') }} °C</span>{% endif %}
+          {% if c.tekanan_darah %}<span>TD {{ c.tekanan_darah }}</span>{% endif %}
+          {% if c.nadi %}<span>Nadi {{ c.nadi }}/menit</span>{% endif %}
+        </div>
+        {% if c.keluhan %}<p><em>Keluhan:</em> {{ c.keluhan }}</p>{% endif %}
+        {% if c.instruksi %}<p><em>Instruksi:</em> {{ c.instruksi }}</p>{% endif %}
+      </article>
+      {% else %}
+      <p class="empty">Belum ada catatan harian. Catat tanda vital dan perkembangan pasien pada formulir di atas.</p>
+      {% endfor %}
+    </section>
+  </div>
+</div>
+
+{% if r.status == 'dirawat' %}
+<div class="modal fade" id="modalPindah" tabindex="-1" aria-labelledby="pindahJudul" aria-hidden="true">
+  <div class="modal-dialog"><form class="modal-content" method="post" action="{{ url_for('rawat_pindah', id=r.id) }}">
+    {{ csrf() }}
+    <div class="modal-header"><h2 class="modal-title fs-5" id="pindahJudul">Pindah kamar</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button></div>
+    <div class="modal-body">
+      <p>Sekarang di <strong>{{ r.bed_sekarang.label }}</strong>. Biaya dihitung per kamar sesuai lama tinggal.</p>
+      <label class="form-label" for="bedBaru">Bed tujuan</label>
+      <select class="form-select" id="bedBaru" name="bed_id" required>
+        <option value="">Pilih bed kosong</option>
+        {% for k, beds in kamar_opts %}
+        <optgroup label="{{ k.nama }} - {{ k.kelas }} - {{ k.tarif|rupiah }}/hari">
+          {% for b in beds %}<option value="{{ b.id }}">{{ k.nama }}, Bed {{ b.nomor }}</option>{% endfor %}
+        </optgroup>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="modal-footer"><button type="button" class="btn btn-link" data-bs-dismiss="modal">Batal</button><button class="btn btn-primary">Pindahkan pasien</button></div>
+  </form></div>
+</div>
+
+<div class="modal fade" id="modalPulang" tabindex="-1" aria-labelledby="pulangJudul" aria-hidden="true">
+  <div class="modal-dialog"><form class="modal-content" method="post" action="{{ url_for('rawat_pulang', id=r.id) }}">
+    {{ csrf() }}
+    <div class="modal-header"><h2 class="modal-title fs-5" id="pulangJudul">Pulangkan pasien</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button></div>
+    <div class="modal-body">
+      <label class="form-label" for="keluar">Tanggal dan jam pulang</label>
+      <input class="form-control mb-3" type="datetime-local" id="keluar" name="tgl_keluar" value="{{ sekarang }}" min="{{ r.tgl_masuk.strftime('%Y-%m-%dT%H:%M') }}" required>
+      <label class="form-label" for="cara">Cara pulang</label>
+      <select class="form-select mb-3" id="cara" name="cara_pulang" required>
+        <option value="">Pilih</option>
+        {% for c in CARA_PULANG %}<option>{{ c }}</option>{% endfor %}
+      </select>
+      <label class="form-label" for="ringkas">Ringkasan pulang</label>
+      <textarea class="form-control" id="ringkas" name="ringkasan_pulang" rows="3"></textarea>
+      <p class="form-text mb-0">Bed otomatis kembali kosong dan total biaya kamar dihitung saat disimpan.</p>
+    </div>
+    <div class="modal-footer"><button type="button" class="btn btn-link" data-bs-dismiss="modal">Batal</button><button class="btn btn-primary">Pulangkan pasien</button></div>
+  </form></div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf with context %}
+{% block title %}Terima pasien{% endblock %}
+{% block header %}<div><h1>Terima pasien rawat inap</h1><p class="sub">Admisi: pilih pasien, dokter penanggung jawab, dan bed</p></div>{% endblock %}
+{% block content %}
+<form method="post" class="panel form-narrow">
+  {{ csrf() }}
+  <div class="row g-3">
+    <div class="col-12">
+      <label class="form-label" for="pasien">Pasien</label>
+      <select class="form-select" id="pasien" name="pasien_id" required>
+        <option value="">Pilih pasien</option>
+        {% for p in pasien_opts %}<option value="{{ p.id }}" {{ 'selected' if form.get('pasien_id')|string == p.id|string }}>{{ p.nama }} ({{ p.no_rm }})</option>{% endfor %}
+      </select>
+      <div class="form-text">Pasien baru? <a href="{{ url_for('pasien_baru') }}">Daftarkan dulu</a>. Pasien yang sedang dirawat tidak muncul di daftar.</div>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="dokter">Dokter penanggung jawab</label>
+      <select class="form-select" id="dokter" name="dokter_id" required>
+        <option value="">Pilih dokter</option>
+        {% for d in dokter_opts %}<option value="{{ d.id }}" {{ 'selected' if form.get('dokter_id')|string == d.id|string }}>{{ d.nama }}, {{ d.spesialis }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="bed">Bed</label>
+      <select class="form-select" id="bed" name="bed_id" required>
+        <option value="">Pilih bed kosong</option>
+        {% for k, beds in kamar_opts %}
+        <optgroup label="{{ k.nama }} - {{ k.kelas }} - {{ k.tarif|rupiah }}/hari">
+          {% for b in beds %}<option value="{{ b.id }}" {{ 'selected' if form.get('bed_id')|string == b.id|string }}>{{ k.nama }}, Bed {{ b.nomor }}</option>{% endfor %}
+        </optgroup>
+        {% else %}
+        <option value="" disabled>Semua bed penuh</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="masuk">Tanggal dan jam masuk</label>
+      <input class="form-control" type="datetime-local" id="masuk" name="tgl_masuk" value="{{ form.get('tgl_masuk','') }}" required>
+    </div>
+    <div class="col-12">
+      <label class="form-label" for="diag">Diagnosa awal</label>
+      <input class="form-control" id="diag" name="diagnosa_awal" value="{{ form.get('diagnosa_awal','') }}" required>
+    </div>
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-primary">Terima pasien</button>
+    <a class="btn btn-link" href="{{ url_for('rawat_list') }}">Batal</a>
+  </div>
+</form>
+{% endblock %}

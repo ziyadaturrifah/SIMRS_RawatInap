@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf with context %}
+{% block title %}Dokter{% endblock %}
+{% block header %}<div><h1>Dokter</h1><p class="sub">Dokter penanggung jawab pasien (DPJP)</p></div>{% endblock %}
+{% block content %}
+<form class="filters" method="get">
+  <input class="form-control" type="search" name="q" value="{{ q }}" placeholder="Cari nama atau spesialis" aria-label="Cari dokter">
+  <button class="btn btn-primary">Cari</button>
+  {% if q %}<a class="btn btn-link" href="{{ url_for('dokter_list') }}">Atur ulang</a>{% endif %}
+</form>
+<div class="row g-4">
+  <div class="{{ 'col-lg-8' if user.role == 'admin' else 'col-12' }}">
+    <div class="panel p-0 table-wrap">
+      <table class="table align-middle mb-0">
+        <thead><tr><th>Nama</th><th>Spesialis</th><th>Pasien dirawat</th>{% if user.role == 'admin' %}<th class="text-end">Aksi</th>{% endif %}</tr></thead>
+        <tbody>
+        {% for d in dokter %}
+          <tr>
+            <td>{{ d.nama }}</td><td>{{ d.spesialis }}</td>
+            <td><a href="{{ url_for('rawat_list', dokter=d.id, status='dirawat') }}">{{ d.rawat|selectattr('status', 'equalto', 'dirawat')|list|length }}</a></td>
+            {% if user.role == 'admin' %}<td class="text-end">
+              {% if not d.rawat %}<form method="post" action="{{ url_for('dokter_hapus', id=d.id) }}" class="d-inline" onsubmit="return confirm('Hapus dokter ini?')">{{ csrf() }}<button class="linkbtn">Hapus</button></form>{% endif %}
+            </td>{% endif %}
+          </tr>
+        {% else %}
+          <tr><td colspan="4" class="empty">Tidak ada dokter yang cocok.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% if user.role == 'admin' %}
+  <div class="col-lg-4">
+    <form method="post" class="panel">
+      {{ csrf() }}
+      <h2>Tambah dokter</h2>
+      <label class="form-label" for="dn">Nama dan gelar</label>
+      <input class="form-control mb-3" id="dn" name="nama" required>
+      <label class="form-label" for="ds">Spesialis</label>
+      <input class="form-control mb-3" id="ds" name="spesialis" required>
+      <button class="btn btn-primary">Simpan dokter</button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

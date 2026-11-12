@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf with context %}
+{% block title %}{{ 'Ubah kamar' if kamar else 'Kamar baru' }}{% endblock %}
+{% block header %}<h1>{{ 'Ubah kamar' if kamar else 'Tambah kamar' }}</h1>{% endblock %}
+{% block content %}
+<form method="post" class="panel form-narrow">
+  {{ csrf() }}
+  <div class="row g-3">
+    <div class="col-12"><label class="form-label" for="nama">Nama kamar</label>
+      <input class="form-control" id="nama" name="nama" value="{{ form.get('nama','') }}" placeholder="Contoh: Melati 203" required></div>
+    <div class="col-md-6"><label class="form-label" for="kelas">Kelas</label>
+      <select class="form-select" id="kelas" name="kelas" required>
+        <option value="">Pilih kelas</option>
+        {% for k in KELAS %}<option {{ 'selected' if form.get('kelas') == k }}>{{ k }}</option>{% endfor %}
+      </select></div>
+    <div class="col-md-6"><label class="form-label" for="tarif">Tarif per hari (Rp)</label>
+      <input class="form-control" type="number" min="1" step="1000" id="tarif" name="tarif" value="{{ form.get('tarif','') }}" required></div>
+    {% if not kamar %}
+    <div class="col-md-6"><label class="form-label" for="jumlah">Jumlah bed</label>
+      <input class="form-control" type="number" min="1" max="20" id="jumlah" name="jumlah_bed" value="{{ form.get('jumlah_bed','1') }}" required></div>
+    {% endif %}
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-primary">Simpan kamar</button>
+    <a class="btn btn-link" href="{{ url_for('kamar_list') }}">Batal</a>
+  </div>
+</form>
+{% endblock %}
