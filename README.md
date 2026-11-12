@@ -16,16 +16,50 @@ python app.py
 Buka http://127.0.0.1:5000. Database SQLite dan data contoh dibuat otomatis saat pertama dijalankan
 (file `instance/simrs.db`). Hapus file itu bila ingin mengulang dari data contoh.
 
-## Deploy demo online (Render)
+## Deploy demo online gratis (PythonAnywhere)
 
-1. Push perubahan terbaru ke GitHub, lalu buat akun di [Render](https://render.com/).
-2. Di Render pilih **New > Blueprint**, hubungkan repo `ziyadaturrifah/SIMRS_RawatInap`, lalu deploy `render.yaml`.
-3. Setelah deploy selesai, bagikan URL web Render ke teman kelompok. Semua harus membuka URL yang sama agar memakai database bersama.
-4. Buka **Environment** pada web service Render untuk melihat password akun demo yang dibuat otomatis: `admin`, `dokter`, dan `perawat`.
+PythonAnywhere Beginner menyediakan satu web app gratis. Semua pengguna yang membuka URL web app yang sama akan menggunakan database SQLite online yang sama.
 
-Blueprint membuat PostgreSQL baru dan mengisi data contoh saat pertama kali dijalankan. Data SQLite di komputermu tidak ikut dipindahkan. Web service gratis akan tidur saat tidak digunakan, dan database PostgreSQL gratis Render kedaluwarsa setelah 30 hari; unduh/cadangkan data sebelum masa itu habis jika ingin menyimpannya.
+1. Buat akun gratis di [PythonAnywhere](https://www.pythonanywhere.com/registration/register/beginner/) dan konfirmasi email.
+2. Buka **Consoles > Bash**, lalu clone repo dan pasang dependensi:
 
-**Demo saja:** akun dan data bawaan bukan untuk penggunaan rumah sakit sungguhan. Jangan masukkan data pasien nyata atau informasi kesehatan sensitif.
+   ```bash
+   git clone https://github.com/ziyadaturrifah/SIMRS_RawatInap.git
+   cd SIMRS_RawatInap
+   mkvirtualenv --python=/usr/bin/python3.13 simrs-venv
+   pip install -r requirements.txt
+   ```
+
+3. Buka **Web > Add a new web app**, pilih **Manual configuration** dan Python 3.13. Pada bagian **Virtualenv**, isi `/home/<username>/.virtualenvs/simrs-venv`.
+4. Pada bagian **Code**, isi **Source code** dan **Working directory** dengan `/home/<username>/SIMRS_RawatInap`.
+5. Buka tautan WSGI configuration file di halaman Web. Ganti isinya dengan kode di bawah dan ganti `<username>` dengan username PythonAnywhere:
+
+   ```python
+   import os
+   import sys
+
+   path = "/home/<username>/SIMRS_RawatInap"
+   if path not in sys.path:
+       sys.path.insert(0, path)
+
+   os.environ["SECRET_KEY"] = "ganti-dengan-rahasia-panjang-acak"
+   os.environ["SIMRS_ADMIN_PASSWORD"] = "ganti-password-admin"
+   os.environ["SIMRS_DOCTOR_PASSWORD"] = "ganti-password-dokter"
+   os.environ["SIMRS_NURSE_PASSWORD"] = "ganti-password-perawat"
+
+   from app import app as application
+   ```
+
+   Buat nilai rahasia/password sendiri dan jangan unggah atau bagikan isi file WSGI tersebut. Atur sebelum pertama kali membuka aplikasi agar akun demo dibuat dengan password baru.
+6. Klik **Reload** pada halaman Web, lalu buka URL yang diberikan PythonAnywhere. Bagikan URL dan kredensial demo kepada teman kelompok melalui jalur pribadi.
+
+Database online dibuat otomatis pada folder proyek dan dipakai bersama oleh aplikasi. SQLite lokal di komputermu tidak ikut dipindahkan. Untuk memperbarui kode, jalankan `git pull` di Bash console lalu klik **Reload**.
+
+**Demo saja:** jangan gunakan data pasien nyata atau informasi kesehatan sensitif. Beginner account memiliki batasan penggunaan; periksa [paket PythonAnywhere](https://www.pythonanywhere.com/pricing/).
+
+## Alternatif deploy demo (Render)
+
+Repo ini juga berisi `render.yaml` untuk membuat web service dan PostgreSQL di Render. Jika akun Render meminta verifikasi kartu, gunakan PythonAnywhere di atas atau ikuti persyaratan akun Render sendiri sebelum melanjutkan. Free web service dapat tidur saat tidak dipakai dan database gratis Render memiliki masa berlaku; cek ketentuan terbaru Render.
 
 Akun contoh:
 
