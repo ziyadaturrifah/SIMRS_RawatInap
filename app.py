@@ -7,6 +7,7 @@ import os
 import secrets
 from datetime import date, datetime, time, timedelta
 from functools import wraps
+from urllib.parse import urlsplit, urlunsplit
 
 from flask import (Flask, abort, flash, g, redirect, render_template, request,
                    session, url_for)
@@ -15,10 +16,20 @@ from sqlalchemy import case, func, or_
 from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
+database_url = os.environ.get("DATABASE_URL", "sqlite:///simrs.db")
+if database_url.startswith(("postgres://", "postgresql://")):
+    parsed_database_url = urlsplit(database_url)
+    database_url = urlunsplit((
+        "postgresql+psycopg",
+        parsed_database_url.netloc,
+        parsed_database_url.path,
+        parsed_database_url.query,
+        parsed_database_url.fragment,
+    ))
 app.config.update(
     SECRET_KEY=os.environ.get("SECRET_KEY", "ganti-ini-sebelum-dikumpulkan"),
     # Untuk MySQL: "mysql+pymysql://user:password@localhost/simrs_rawat_inap"
-    SQLALCHEMY_DATABASE_URI=os.environ.get("DATABASE_URL", "sqlite:///simrs.db"),
+    SQLALCHEMY_DATABASE_URI=database_url,
     SQLALCHEMY_TRACK_MODIFICATIONS=False,
 )
 db = SQLAlchemy(app)
@@ -751,9 +762,13 @@ def error(e):
 def seed():
     if User.query.first():
         return
-    for uname, pw, nama, role in [("admin", "admin123", "Administrator RS", "admin"),
-                                  ("dokter", "dokter123", "dr. Andi Prasetyo, Sp.PD", "dokter"),
-                                  ("perawat", "perawat123", "Ns. Lestari", "perawat")]:
+    accounts = [
+        ("admin", os.environ.get("SIMRS_ADMIN_PASSWORD", "admin123"), "Administrator RS", "admin"),
+        ("dokter", os.environ.get("SIMRS_DOCTOR_PASSWORD", "dokter123"),
+         "dr. Andi Prasetyo, Sp.PD", "dokter"),
+        ("perawat", os.environ.get("SIMRS_NURSE_PASSWORD", "perawat123"), "Ns. Lestari", "perawat"),
+    ]
+    for uname, pw, nama, role in accounts:
         db.session.add(User(username=uname, password_hash=generate_password_hash(pw),
                             nama=nama, role=role))
 
@@ -841,4 +856,8 @@ with app.app_context():
     seed()
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 5000)),
+        debug=os.environ.get("FLASK_DEBUG") == "1",
+    )

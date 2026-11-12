@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: simrs-rawat-inap
+    runtime: python
+    plan: free
+    region: singapore
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    healthCheckPath: /login
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: simrs-rawat-inap-db
+          property: connectionString
+      - key: SIMRS_ADMIN_PASSWORD
+        generateValue: true
+      - key: SIMRS_DOCTOR_PASSWORD
+        generateValue: true
+      - key: SIMRS_NURSE_PASSWORD
+        generateValue: true
+
+databases:
+  - name: simrs-rawat-inap-db
+    databaseName: simrs_rawat_inap
+    user: simrs_user
+    plan: free
+    region: singapore

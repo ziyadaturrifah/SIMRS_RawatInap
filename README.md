@@ -16,6 +16,17 @@ python app.py
 Buka http://127.0.0.1:5000. Database SQLite dan data contoh dibuat otomatis saat pertama dijalankan
 (file `instance/simrs.db`). Hapus file itu bila ingin mengulang dari data contoh.
 
+## Deploy demo online (Render)
+
+1. Push perubahan terbaru ke GitHub, lalu buat akun di [Render](https://render.com/).
+2. Di Render pilih **New > Blueprint**, hubungkan repo `ziyadaturrifah/SIMRS_RawatInap`, lalu deploy `render.yaml`.
+3. Setelah deploy selesai, bagikan URL web Render ke teman kelompok. Semua harus membuka URL yang sama agar memakai database bersama.
+4. Buka **Environment** pada web service Render untuk melihat password akun demo yang dibuat otomatis: `admin`, `dokter`, dan `perawat`.
+
+Blueprint membuat PostgreSQL baru dan mengisi data contoh saat pertama kali dijalankan. Data SQLite di komputermu tidak ikut dipindahkan. Web service gratis akan tidur saat tidak digunakan, dan database PostgreSQL gratis Render kedaluwarsa setelah 30 hari; unduh/cadangkan data sebelum masa itu habis jika ingin menyimpannya.
+
+**Demo saja:** akun dan data bawaan bukan untuk penggunaan rumah sakit sungguhan. Jangan masukkan data pasien nyata atau informasi kesehatan sensitif.
+
 Akun contoh:
 
 | Peran   | Username | Password   |
@@ -23,6 +34,8 @@ Akun contoh:
 | Admin   | admin    | admin123   |
 | Dokter  | dokter   | dokter123  |
 | Perawat | perawat  | perawat123 |
+
+Kredensial di atas hanya untuk lokal. Saat deploy Render, gunakan password yang dibuat dan ditampilkan pada pengaturan Environment Render.
 
 Admin boleh mengelola kamar, bed, dan dokter. Dokter dan perawat mengelola pasien, admisi, catatan,
 pindah kamar, dan pemulangan.

@@ -1,4 +1,4 @@
 Flask>=3.0
 Flask-SQLAlchemy>=3.1
-# Hanya jika memakai MySQL:
-# PyMySQL>=1.1
+gunicorn>=23.0
+psycopg[binary]>=3.2
